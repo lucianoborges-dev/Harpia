@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Harpia.Bridge.Core/Harpia.Bridge.Core.csproj" />
+    <Project Path="src/Harpia.MessagingProtocol/Harpia.MessagingProtocol.csproj" />
+    <Project Path="src/Harpia.Shared/Harpia.Shared.csproj" />
+    <Project Path="src/Harpia.Sim.Terminal/Harpia.Sim.Terminal.csproj" />
+    <Project Path="src/Harpia.Station.Terminal/Harpia.Station.Terminal.csproj" />
+  </Folder>
+</Solution>

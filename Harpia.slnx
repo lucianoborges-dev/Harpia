@@ -1,9 +1,20 @@
 <Solution>
-  <Folder Name="/src/">
-    <Project Path="src/Harpia.Bridge.Core/Harpia.Bridge.Core.csproj" />
-    <Project Path="src/Harpia.MessagingProtocol/Harpia.MessagingProtocol.csproj" />
-    <Project Path="src/Harpia.Shared/Harpia.Shared.csproj" />
-    <Project Path="src/Harpia.Sim.Terminal/Harpia.Sim.Terminal.csproj" />
-    <Project Path="src/Harpia.Station.Terminal/Harpia.Station.Terminal.csproj" />
+  <Folder Name="/src/" />
+  <Folder Name="/src/1. Stations/">
+    <Project Path="src/Stations/Harpia.ControlStation.Terminal/Harpia.ControlStation.Terminal.csproj" Id="ff7e16e0-b1c3-44ef-9420-51bc1fe8a132" />
+  </Folder>
+  <Folder Name="/src/2. Servers/">
+    <Project Path="src/Servers/Harpia.ControlServer/Harpia.ControlServer.csproj" Id="e9c31a50-c2b6-478a-b9ec-1d1dde9dd96b" />
+  </Folder>
+  <Folder Name="/src/3. Simulators/">
+    <Project Path="src/Simulators/Harpia.UVSim.Terminal/Harpia.UVSim.Terminal.csproj" Id="576caf5f-30fd-4e2a-87d3-b9d92c039cb8" />
+  </Folder>
+  <Folder Name="/src/4. Protocols/">
+    <Project Path="src/Protocols/Harpia.ALMP/Harpia.ALMP.csproj" Id="e4b1faa2-15b8-4709-a3cd-6520fb8dedc3" />
+    <Project Path="src/Protocols/Harpia.SLSP/Harpia.SLSP.csproj" Id="6c24ea68-da5a-447d-b3d7-c0b5b9072e47" />
+  </Folder>
+  <Folder Name="/src/5. Common/" />
+  <Folder Name="/tests/">
+    <Project Path="tests/Harpia.MessagingProtocol.Tests/Harpia.MessagingProtocol.Tests.csproj" Id="2a2e7a27-82a4-47db-aa44-b8a68aefcf8a" />
   </Folder>
 </Solution>

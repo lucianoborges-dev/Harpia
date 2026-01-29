@@ -1,0 +1,6 @@
+@Harpia.ControlServer_HostAddress = http://localhost:5217
+
+GET {{Harpia.ControlServer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

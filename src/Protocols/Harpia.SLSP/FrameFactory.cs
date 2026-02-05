@@ -2,6 +2,7 @@
 using System.Security.Cryptography;
 
 using Harpia.SLSP.Helpers;
+using Harpia.SLSP.Models;
 
 namespace Harpia.SLSP;
 
@@ -16,8 +17,8 @@ public static class FrameFactory
 		byte[] buffer = new byte[size];
 		Span<byte> span = buffer.AsSpan();
 
-		span[0] = 0xAA; // Magic
-		span[1] = 0x01; // Version
+		span[0] = Constants.ProtocolHeader;
+		span[1] = Constants.CurrentProtocolVersion;
 		span[2] = (byte)(encrypt ? 1 : 0);
 		span[3] = deviceId;
 		span[4] = (byte)payload.Length;

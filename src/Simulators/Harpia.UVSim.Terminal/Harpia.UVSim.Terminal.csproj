@@ -7,4 +7,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Protocols\Harpia.ALMP\Harpia.ALMP.csproj" />
+    <ProjectReference Include="..\..\Protocols\Harpia.SLSP\Harpia.SLSP.csproj" />
+  </ItemGroup>
+
 </Project>

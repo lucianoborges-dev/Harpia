@@ -1,75 +1,21 @@
-﻿using System.Buffers;
+﻿using System;
+using System.Buffers;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Text;
 
 using Harpia.SLSP.Helpers;
+using Harpia.SLSP.Models;
 
 namespace Harpia.SLSP;
 
-public class SessionContext(byte deviceId, object transportContext)
-{
-	public byte DeviceId { get; set; } = deviceId;
-	public byte[]? AesKey { get; set; }
-	public HandshakeManager Handshake { get; } = new();
-	public object TransportContext { get; } = transportContext;
-}
-
-/// <summary>
-/// Arguments for received frame events.
-/// </summary>
-public class FrameReceivedEventArgs : EventArgs
-{
-	public byte DeviceId { get; }
-	public byte[] Payload { get; }
-	public object TransportContext { get; }
-
-	public FrameReceivedEventArgs(byte deviceId, byte[] payload, object transportContext)
-	{
-		DeviceId = deviceId;
-		Payload = payload;
-		TransportContext = transportContext;
-	}
-}
 
 public class SecureChannel : ISecureChannel
 {
 	// Async events
-	public event Func<FrameReceivedEventArgs, Task>? HeartbeatReceived;
 	public event Func<FrameReceivedEventArgs, Task>? PayloadReceived;
-	public event Func<FrameReceivedEventArgs, Task>? KeyEstablished;
+	public event Func<FrameReceivedEventArgs, Task>? ControlFrameReceived;
 
-	private static FrameReceivedEventArgs CreateArgs(byte deviceId, byte[] payload, SessionContext context)
-		=> new(deviceId, payload, context.TransportContext);
-
-	private async Task OnHeartbeatReceived(byte deviceId, byte[] payload, SessionContext context)
-	{
-		if (HeartbeatReceived is not null)
-			await HeartbeatReceived(CreateArgs(deviceId, payload, context));
-	}
-
-	private async Task OnPayloadReceived(byte deviceId, byte[] payload, SessionContext context)
-	{
-		if (PayloadReceived is not null)
-			await PayloadReceived(CreateArgs(deviceId, payload, context));
-	}
-
-	private async Task OnKeyEstablished(byte[] payload, SessionContext context)
-	{
-		if (KeyEstablished is not null)
-			await KeyEstablished(CreateArgs(0xFF, payload, context));
-	}
-
-	private static readonly byte[] HeartbeatBytes = Encoding.ASCII.GetBytes("HEARTBEAT");
-
-	private async Task NotifyFrameReceived(byte deviceId, byte[] payload, SessionContext context)
-	{
-		if (payload.SequenceEqual(HeartbeatBytes))
-			await OnHeartbeatReceived(deviceId, payload, context);
-		else
-			await OnPayloadReceived(deviceId, payload, context);
-	}
-
-	public async Task RunParserAsync(byte[] bytes, SessionContext context, CancellationToken ct)
+	public async Task RunParserAsync(byte[] bytes, SessionContext context, CancellationToken cancellationToken)
 	{
 		var buffer = new ReadOnlySequence<byte>(bytes);
 
@@ -100,6 +46,11 @@ public class SecureChannel : ISecureChannel
 		Span<byte> span = stackalloc byte[(int)frame.Length];
 		frame.CopyTo(span);
 
+		// Guards
+		if (span[0] != Constants.ProtocolHeader) return;
+		if (span[1] != Constants.CurrentProtocolVersion) return;
+		if (span[2] is not 0 or 1) return;
+
 		bool isEncrypted = span[2] == 1;
 		byte deviceId = span[3];
 		byte payloadLen = span[4];
@@ -118,7 +69,8 @@ public class SecureChannel : ISecureChannel
 			try
 			{
 				aesGcm.Decrypt(nonce, ciphertext, tag, decrypted, headerAad);
-				await NotifyFrameReceived(deviceId, decrypted.ToArray(), context);
+				var payload = new Payload(decrypted);
+				await NotifyFrameReceivedAsync(deviceId, payload, context);
 			}
 			catch (CryptographicException)
 			{
@@ -129,19 +81,24 @@ public class SecureChannel : ISecureChannel
 		{
 			var checksum = span[^1];
 			var crc8 = Crc8.ComputeChecksum(span[..^1]);
-			if (checksum != crc8) return;
+			if (checksum != crc8) return; 
 
-			var payload = span.Slice(5, payloadLen);
+			var payload = new Payload(span.Slice(5, payloadLen));
+			await NotifyFrameReceivedAsync(deviceId, payload, context);
+		}
+	}
 
-			if (deviceId == 0xFF && context.Handshake != null)
-			{
-				context.AesKey = context.Handshake.DeriveFinalKey(payload.ToArray());
-				await OnKeyEstablished(context.AesKey, context);
-			}
-			else if (context.AesKey == null)
-			{
-				await NotifyFrameReceived(deviceId, payload.ToArray(), context);
-			}
+	private async Task NotifyFrameReceivedAsync(byte deviceId, Payload payload, SessionContext context)
+	{
+		var args = new FrameReceivedEventArgs(deviceId, payload, context);
+
+		if (payload.PayloadType == PayloadType.Payload)
+		{
+			await PayloadReceived?.Invoke(args)!;
+		}
+		else
+		{
+			await ControlFrameReceived?.Invoke(args)!;
 		}
 	}
 }

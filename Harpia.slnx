@@ -15,6 +15,6 @@
   </Folder>
   <Folder Name="/src/5. Common/" />
   <Folder Name="/tests/">
-    <Project Path="tests/Harpia.MessagingProtocol.Tests/Harpia.MessagingProtocol.Tests.csproj" Id="2a2e7a27-82a4-47db-aa44-b8a68aefcf8a" />
+    <Project Path="tests/Harpia.SLSP.Tests/Harpia.SLSP.Tests.csproj" Id="4164785c-9020-4eb7-b803-ff3c3430f1ff" />
   </Folder>
 </Solution>

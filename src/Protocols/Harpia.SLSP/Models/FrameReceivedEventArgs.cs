@@ -1,7 +1,8 @@
 ﻿namespace Harpia.SLSP.Models;
 
-public record FrameReceivedEventArgs(
-	byte DeviceId, 
-	byte[] Payload, 
-	object Context
-);
+public class FrameReceivedEventArgs(byte deviceId, Payload payload, object transportContext) : EventArgs
+{
+	public byte DeviceId { get; } = deviceId;
+	public Payload Payload { get; } = payload;
+	public object TransportContext { get; } = transportContext;
+}
